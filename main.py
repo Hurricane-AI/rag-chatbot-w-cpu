@@ -5,6 +5,14 @@ from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import OllamaEmbeddings
 
+from transformers import pipeline
+
+# Helsinki-NLPのモデルを使用して日本語を英語に翻訳
+translator_to_en = pipeline("translation", model="Helsinki-NLP/opus-mt-ja-en")
+print(translator_to_en("初めまして、こんにちは。")[0]["translation_text"])
+
+translator_to_ja = pipeline("translation", model="staka/fugumt-en-ja")
+
 st.title("Webページとのチャット 🌐")
 st.caption("このアプリでは、ローカルのLlama-3とRAGを使用してWebページとチャットすることができます")
 
@@ -19,13 +27,14 @@ if webpage_url:
     splits = text_splitter.split_documents(docs)
     
     # 2. Ollamaの埋め込みとベクトルストアの作成
-    embeddings = OllamaEmbeddings(model="hf.co/ChristianAzinn/mxbai-embed-large-v1-gguf:Q5_K_M")
+    embeddings = OllamaEmbeddings(model="hf.co/lm-kit/bge-m3-gguf:Q5_K_M")
     vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
     
     # 3. Ollama Llama3モデルを呼び出す
     def ollama_llm(question, context):
-        formatted_prompt = f"<s>以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。\n\n### 指示:\n次の文章の情報を元に、与えられた質問に答えなさい。\n\n### 文章:\n{context}\n\n### 質問:\n{question}\n\n応答: "
-        response = ollama.chat(model='hf.co/team-hatakeyama-phase2/Tanuki-8B-dpo-v1.0-GGUF:Q5_K_M', messages=[{'role': 'user', 'content': formatted_prompt}])
+        formatted_prompt = f'You are an assistant for answering questions. Use the provided context to generate accurate and concise responses. If the context does not contain sufficient information, respond with "I do not know." Do not fabricate answers.\n\n### Question: {translator_to_en(question)[0]["translation_text"]}\n\n### Context: {context}\n\n### Answer:'
+        print(formatted_prompt)
+        response = ollama.chat(model='hf.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF:Q4_K_M', messages=[{'role': 'user', 'content': formatted_prompt}])
         return response['message']['content']
     
     # 4. RAGのセットアップ
@@ -48,3 +57,4 @@ if webpage_url:
     if prompt:
         result = rag_chain(prompt)
         st.write(result)
+        st.write(translator_to_ja(result)[0]["translation_text"])
