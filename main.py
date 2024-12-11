@@ -19,13 +19,13 @@ if webpage_url:
     splits = text_splitter.split_documents(docs)
     
     # 2. Ollamaの埋め込みとベクトルストアの作成
-    embeddings = OllamaEmbeddings(model="hf.co/ChristianAzinn/mxbai-embed-large-v1-gguf:Q5_K_S")
+    embeddings = OllamaEmbeddings(model="hf.co/ChristianAzinn/mxbai-embed-large-v1-gguf:Q5_K_M")
     vectorstore = Chroma.from_documents(documents=splits, embedding=embeddings)
     
     # 3. Ollama Llama3モデルを呼び出す
     def ollama_llm(question, context):
-        formatted_prompt = f"Question: {question}\n\nContext: {context}"
-        response = ollama.chat(model='hf.co/team-hatakeyama-phase2/Tanuki-8B-dpo-v1.0-GGUF:Q4_K_S', messages=[{'role': 'user', 'content': formatted_prompt}])
+        formatted_prompt = f"<s>以下は、タスクを説明する指示です。要求を適切に満たす応答を書きなさい。\n\n### 指示:\n次の文章の情報を元に、与えられた質問に答えなさい。\n\n### 文章:\n{context}\n\n### 質問:\n{question}\n\n応答: "
+        response = ollama.chat(model='hf.co/team-hatakeyama-phase2/Tanuki-8B-dpo-v1.0-GGUF:Q5_K_M', messages=[{'role': 'user', 'content': formatted_prompt}])
         return response['message']['content']
     
     # 4. RAGのセットアップ
