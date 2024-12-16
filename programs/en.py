@@ -11,8 +11,6 @@ from transformers import pipeline
 translator_to_en = pipeline("translation", model="Helsinki-NLP/opus-mt-ja-en")
 print(translator_to_en("初めまして、こんにちは。")[0]["translation_text"])
 
-translator_to_ja = pipeline("translation", model="staka/fugumt-en-ja")
-
 st.title("Webページとのチャット 🌐")
 st.caption("このアプリでは、ローカルのLlama-3とRAGを使用してWebページとチャットすることができます")
 
@@ -57,4 +55,3 @@ if webpage_url:
     if prompt:
         result = rag_chain(prompt)
         st.write(result)
-        st.write(translator_to_ja(result)[0]["translation_text"])
