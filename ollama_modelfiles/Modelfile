@@ -1,4 +1,4 @@
-FROM
+FROM /Users/wxwxw/Documents/rag-chatbot-w-cpu/ollama_modelfiles/models/Llama-3.3-70B-Instruct-Q4_K_M.gguf
 TEMPLATE """
 {{- if or .System .Tools }}<|start_header_id|>system<|end_header_id|>
 {{- if .System }}

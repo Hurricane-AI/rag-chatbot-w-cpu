@@ -1,2 +1,3 @@
 .venv/
 ollama_modelfiles/models/
+.env
